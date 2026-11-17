@@ -1,8 +1,16 @@
 import {
+  ACCESSIBLE_COLOR_PALETTE,
+  ACCESSIBLE_ELEMENT_STROKE_PICKS,
   applyDarkModeFilter,
   COLOR_PALETTE,
+  COLOR_TOP_PICKS_SLOTS,
+  DEFAULT_ELEMENT_STROKE_PICKS,
+  getContrastRatio,
+  meetsContrast,
   removeDarkModeFilter,
   rgbToHex,
+  WCAG_MIN_CONTRAST_GRAPHICS,
+  WCAG_MIN_CONTRAST_TEXT,
 } from "@excalidraw/common";
 
 describe("COLOR_PALETTE", () => {
@@ -301,5 +309,116 @@ describe("rgbToHex", () => {
       // 0.05 * 255 = 12.75 -> rounds to 13 = 0x0d
       expect(rgbToHex(255, 0, 0, 0.05)).toBe("#ff00000d");
     });
+  });
+});
+
+describe("getContrastRatio", () => {
+  it("returns 21 for black on white (WCAG maximum)", () => {
+    expect(getContrastRatio("#000000", "#ffffff")).toBeCloseTo(21, 5);
+  });
+
+  it("returns 1 for the same color (WCAG minimum)", () => {
+    expect(getContrastRatio("#e03131", "#e03131")).toBeCloseTo(1, 5);
+  });
+
+  it("is symmetric", () => {
+    expect(getContrastRatio("#1971c2", "#ffffff")).toBeCloseTo(
+      getContrastRatio("#ffffff", "#1971c2"),
+      10,
+    );
+  });
+
+  it("matches known values", () => {
+    // default red x default green stroke picks
+    expect(getContrastRatio("#e03131", "#2f9e44")).toBeCloseTo(1.31, 2);
+    expect(getContrastRatio("#1971c2", "#ffffff")).toBeCloseTo(5.02, 2);
+  });
+
+  it("accepts any format tinycolor understands", () => {
+    expect(getContrastRatio("black", "#fff")).toBeCloseTo(21, 5);
+    expect(getContrastRatio("rgb(0, 0, 0)", "white")).toBeCloseTo(21, 5);
+  });
+
+  it("throws for invalid colors", () => {
+    expect(() => getContrastRatio("not-a-color", "#ffffff")).toThrow();
+    expect(() => getContrastRatio("#ffffff", "")).toThrow();
+  });
+
+  it("throws for colors that are not fully opaque", () => {
+    expect(() => getContrastRatio("transparent", "#ffffff")).toThrow();
+    expect(() => getContrastRatio("#00000080", "#ffffff")).toThrow();
+  });
+});
+
+describe("meetsContrast", () => {
+  it("uses the WCAG 1.4.11 graphics threshold (3:1) by default", () => {
+    expect(WCAG_MIN_CONTRAST_GRAPHICS).toBe(3);
+    // #2f9e44 on white = 3.45
+    expect(meetsContrast("#2f9e44", "#ffffff")).toBe(true);
+    // #f08c00 on white = 2.48
+    expect(meetsContrast("#f08c00", "#ffffff")).toBe(false);
+  });
+
+  it("accepts a custom threshold", () => {
+    expect(WCAG_MIN_CONTRAST_TEXT).toBe(4.5);
+    // #2f9e44 on white = 3.45
+    expect(meetsContrast("#2f9e44", "#ffffff", WCAG_MIN_CONTRAST_TEXT)).toBe(
+      false,
+    );
+  });
+
+  it("passes when the ratio is exactly the threshold", () => {
+    expect(meetsContrast("#000000", "#ffffff", 21)).toBe(true);
+  });
+});
+
+describe("DEFAULT_ELEMENT_STROKE_PICKS contrast baseline", () => {
+  // documents the problem the accessible palette addresses
+  it("yellow pick is below 3:1 on the default white canvas", () => {
+    const yellow = DEFAULT_ELEMENT_STROKE_PICKS[4];
+    expect(yellow).toBe(COLOR_PALETTE.yellow[4]);
+    expect(getContrastRatio(yellow, COLOR_PALETTE.white)).toBeCloseTo(2.48, 2);
+  });
+
+  it("red and green picks are 1.31:1 apart", () => {
+    const [, red, green] = DEFAULT_ELEMENT_STROKE_PICKS;
+    expect(getContrastRatio(red, green)).toBeCloseTo(1.31, 2);
+  });
+});
+
+describe("ACCESSIBLE_COLOR_PALETTE", () => {
+  it("doesn't regress", () => {
+    expect(ACCESSIBLE_COLOR_PALETTE).toMatchSnapshot();
+  });
+
+  it.each(Object.entries(ACCESSIBLE_COLOR_PALETTE))(
+    "%s (%s) meets 3:1 on the default white canvas",
+    (_name, color) => {
+      expect(meetsContrast(color, COLOR_PALETTE.white)).toBe(true);
+    },
+  );
+
+  it("has no duplicate colors", () => {
+    const colors = Object.values(ACCESSIBLE_COLOR_PALETTE);
+    expect(new Set(colors).size).toBe(colors.length);
+  });
+});
+
+describe("ACCESSIBLE_ELEMENT_STROKE_PICKS", () => {
+  it("fills every top-picks slot", () => {
+    expect(ACCESSIBLE_ELEMENT_STROKE_PICKS).toHaveLength(COLOR_TOP_PICKS_SLOTS);
+  });
+
+  it("only uses colors from the accessible palette", () => {
+    const palette: readonly string[] = Object.values(ACCESSIBLE_COLOR_PALETTE);
+    for (const color of ACCESSIBLE_ELEMENT_STROKE_PICKS) {
+      expect(palette).toContain(color);
+    }
+  });
+
+  it("every pick meets 3:1 on the default white canvas", () => {
+    for (const color of ACCESSIBLE_ELEMENT_STROKE_PICKS) {
+      expect(meetsContrast(color, COLOR_PALETTE.white)).toBe(true);
+    }
   });
 });
