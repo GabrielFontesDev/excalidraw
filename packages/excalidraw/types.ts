@@ -373,6 +373,9 @@ export interface AppState {
   isMidpointSnappingEnabled: boolean;
   /** user preference whether to show contextual hints above the toolbar */
   showHints: boolean;
+  /** user preference whether the stroke color top picks use the
+   * colorblind-safe palette (`ACCESSIBLE_ELEMENT_STROKE_PICKS`) */
+  accessiblePaletteEnabled: boolean;
   /**
    * user preference for what the wheel does: with a `trackpad` a plain wheel
    * pans; with a `mouse` a plain wheel zooms. Ctrl/cmd+wheel (how a pinch is

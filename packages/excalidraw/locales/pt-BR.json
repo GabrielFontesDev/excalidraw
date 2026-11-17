@@ -195,7 +195,8 @@
     "boxSelectionContain": "",
     "boxSelectionOverlap": "",
     "arrowBinding": "Atalho de flecha",
-    "midpointSnapping": "Encaixar em pontos intermediários"
+    "midpointSnapping": "Encaixar em pontos intermediários",
+    "accessiblePalette": "Paleta para daltonismo"
   },
   "elementLink": {
     "title": "Links para o objeto",

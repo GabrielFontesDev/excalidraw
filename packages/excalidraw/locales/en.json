@@ -204,6 +204,7 @@
     "arrowBinding": "Arrow binding",
     "midpointSnapping": "Snap to midpoints",
     "showHints": "Toolbar hints",
+    "accessiblePalette": "Colorblind-safe palette",
     "inputDevice": "Input",
     "inputDeviceTrackpad": "Trackpad",
     "inputDeviceMouse": "Mouse"

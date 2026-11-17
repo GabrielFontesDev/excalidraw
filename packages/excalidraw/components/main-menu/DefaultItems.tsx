@@ -15,6 +15,7 @@ import {
   actionToggleObjectsSnapMode,
   actionToggleSearchMenu,
   actionToggleShowHints,
+  actionToggleAccessiblePalette,
   actionToggleMinimap,
   actionToggleStats,
   actionToggleTheme,
@@ -582,6 +583,23 @@ const PreferencesToggleShowHintsItem = () => {
   );
 };
 
+const PreferencesToggleAccessiblePaletteItem = () => {
+  const { t } = useI18n();
+  const actionManager = useExcalidrawActionManager();
+  const appState = useUIAppState();
+  return (
+    <DropdownMenuItemCheckbox
+      checked={appState.accessiblePaletteEnabled}
+      onSelect={(event) => {
+        actionManager.executeAction(actionToggleAccessiblePalette);
+        event.preventDefault();
+      }}
+    >
+      {t("labels.accessiblePalette")}
+    </DropdownMenuItemCheckbox>
+  );
+};
+
 export const PreferencesToggleGridModeItem = () => {
   const { t } = useI18n();
   const actionManager = useExcalidrawActionManager();
@@ -706,6 +724,7 @@ export const Preferences = ({
             <PreferencesToggleArrowBindingItem />
             <PreferencesToggleMidpointSnappingItem />
             <PreferencesToggleShowHintsItem />
+            <PreferencesToggleAccessiblePaletteItem />
           </>
         )}
         {additionalItems}
@@ -721,6 +740,7 @@ Preferences.ToggleSnapMode = PreferencesToggleSnapModeItem;
 Preferences.ToggleArrowBinding = PreferencesToggleArrowBindingItem;
 Preferences.ToggleMidpointSnapping = PreferencesToggleMidpointSnappingItem;
 Preferences.ToggleShowHints = PreferencesToggleShowHintsItem;
+Preferences.ToggleAccessiblePalette = PreferencesToggleAccessiblePaletteItem;
 Preferences.ToggleGridMode = PreferencesToggleGridModeItem;
 Preferences.ToggleZenMode = PreferencesToggleZenModeItem;
 Preferences.ToggleViewMode = PreferencesToggleViewModeItem;

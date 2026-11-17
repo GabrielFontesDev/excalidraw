@@ -371,6 +371,7 @@ function CommandPaletteInner({
         actionManager.actions.minimap,
         actionManager.actions.objectsSnapMode,
         actionManager.actions.showHints,
+        actionManager.actions.accessiblePalette,
         actionManager.actions.toggleShortcuts,
         actionManager.actions.selectAll,
         actionManager.actions.toggleElementLock,
