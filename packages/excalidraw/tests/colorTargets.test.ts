@@ -1,7 +1,5 @@
 import {
-  ACCESSIBLE_ELEMENT_STROKE_PICKS,
   COLOR_PALETTE,
-  DEFAULT_ELEMENT_BACKGROUND_PICKS,
   DEFAULT_ELEMENT_STROKE_PICKS,
   DEFAULT_STICKY_NOTE_BG,
   STICKY_NOTE_BACKGROUND_PICKS,
@@ -133,40 +131,19 @@ describe("resolveColorTarget", () => {
 });
 
 describe("accessible palette preference", () => {
-  const rectangle = API.createElement({ type: "rectangle", id: "rectangle" });
-  const note = API.createElement({ type: "stickynote", id: "note" });
-
-  it("is off by default, keeping the default stroke picks", () => {
+  it("is off by default", () => {
     expect(getDefaultAppState().accessiblePaletteEnabled).toBe(false);
-    expect(
-      resolveColorTarget(appState(), [rectangle], "strokeColor").topPicks,
-    ).toBe(DEFAULT_ELEMENT_STROKE_PICKS);
   });
 
-  it("swaps the regular stroke picks for the colorblind-safe ones", () => {
-    const target = resolveColorTarget(
-      appState({ accessiblePaletteEnabled: true }),
-      [rectangle],
-      "strokeColor",
-    );
-    expect(target.topPicks).toBe(ACCESSIBLE_ELEMENT_STROKE_PICKS);
-  });
-
-  it("leaves background and sticky note picks alone", () => {
-    const enabled = appState({
-      accessiblePaletteEnabled: true,
-      selectedElementIds: { note: true },
-    });
+  it("does not change the top picks (it is a display filter)", () => {
+    const rectangle = API.createElement({ type: "rectangle", id: "rectangle" });
     expect(
       resolveColorTarget(
         appState({ accessiblePaletteEnabled: true }),
         [rectangle],
-        "backgroundColor",
+        "strokeColor",
       ).topPicks,
-    ).toBe(DEFAULT_ELEMENT_BACKGROUND_PICKS);
-    expect(
-      resolveColorTarget(enabled, [rectangle, note], "strokeColor").topPicks,
-    ).not.toBe(ACCESSIBLE_ELEMENT_STROKE_PICKS);
+    ).toBe(DEFAULT_ELEMENT_STROKE_PICKS);
   });
 
   it("is toggled by actionToggleAccessiblePalette", () => {

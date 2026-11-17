@@ -11,6 +11,8 @@ import {
 
 import type { Op } from "roughjs/bin/core";
 
+import type { ExcalidrawRectangleElement } from "../src/types";
+
 describe("arrowhead shapes", () => {
   it.each(["triangle", "diamond_outline", "circle"] as const)(
     "fills %s arrowheads along their outline",
@@ -76,5 +78,59 @@ describe("elbow arrow shapes", () => {
         [0, 50],
       ]),
     ).toBe(3);
+  });
+});
+
+describe("accessible palette display filter", () => {
+  const renderConfig = (accessiblePalette: boolean) => ({
+    isExporting: false,
+    canvasBackgroundColor: "#ffffff",
+    embedsValidationStatus: new Map(),
+    theme: "light" as const,
+    accessiblePalette,
+  });
+  const strokeOf = (shape: unknown) =>
+    (shape as { options: { stroke: string; fill?: string } }).options;
+
+  it("draws mapped colors without changing the stored element", () => {
+    const rect = API.createElement({
+      type: "rectangle",
+      strokeColor: "#e03131",
+      backgroundColor: "#2f9e44",
+    }) as ExcalidrawRectangleElement;
+
+    const shape = ShapeCache.generateElementShape(rect, renderConfig(true));
+
+    expect(strokeOf(shape).stroke).toBe("#d55e00");
+    expect(strokeOf(shape).fill).toBe("#009e73");
+    expect(rect.strokeColor).toBe("#e03131");
+    expect(rect.backgroundColor).toBe("#2f9e44");
+  });
+
+  it("goes back to the stored colors when turned off (cache is not reused)", () => {
+    const rect = API.createElement({
+      type: "rectangle",
+      strokeColor: "#e03131",
+    }) as ExcalidrawRectangleElement;
+
+    const on = ShapeCache.generateElementShape(rect, renderConfig(true));
+    const off = ShapeCache.generateElementShape(rect, renderConfig(false));
+
+    expect(strokeOf(on).stroke).toBe("#d55e00");
+    expect(strokeOf(off).stroke).toBe("#e03131");
+  });
+
+  it("is never applied when exporting", () => {
+    const rect = API.createElement({
+      type: "rectangle",
+      strokeColor: "#e03131",
+    }) as ExcalidrawRectangleElement;
+
+    const shape = ShapeCache.generateElementShape(rect, {
+      ...renderConfig(true),
+      isExporting: true,
+    });
+
+    expect(strokeOf(shape).stroke).toBe("#e03131");
   });
 });

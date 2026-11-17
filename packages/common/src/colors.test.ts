@@ -1,6 +1,9 @@
 import {
   ACCESSIBLE_COLOR_PALETTE,
+  ACCESSIBLE_COLOR_MAP,
   ACCESSIBLE_ELEMENT_STROKE_PICKS,
+  applyAccessiblePaletteFilter,
+  applyColorFilters,
   applyDarkModeFilter,
   COLOR_PALETTE,
   COLOR_TOP_PICKS_SLOTS,
@@ -420,5 +423,70 @@ describe("ACCESSIBLE_ELEMENT_STROKE_PICKS", () => {
     for (const color of ACCESSIBLE_ELEMENT_STROKE_PICKS) {
       expect(meetsContrast(color, COLOR_PALETTE.white)).toBe(true);
     }
+  });
+});
+
+describe("applyAccessiblePaletteFilter", () => {
+  it("maps each default stroke pick to the accessible pick in the same slot", () => {
+    DEFAULT_ELEMENT_STROKE_PICKS.forEach((color, i) => {
+      expect(applyAccessiblePaletteFilter(color)).toBe(
+        ACCESSIBLE_ELEMENT_STROKE_PICKS[i],
+      );
+    });
+  });
+
+  it("maps red to vermillion and green to bluish green", () => {
+    expect(applyAccessiblePaletteFilter(COLOR_PALETTE.red[4])).toBe("#d55e00");
+    expect(applyAccessiblePaletteFilter(COLOR_PALETTE.green[4])).toBe(
+      "#009e73",
+    );
+  });
+
+  it("is case-insensitive", () => {
+    expect(applyAccessiblePaletteFilter("#E03131")).toBe("#d55e00");
+  });
+
+  it("keeps the alpha channel of a mapped color", () => {
+    expect(applyAccessiblePaletteFilter("#e0313180")).toBe("#d55e0080");
+  });
+
+  it("leaves colors outside the map unchanged", () => {
+    expect(applyAccessiblePaletteFilter("#123456")).toBe("#123456");
+    expect(applyAccessiblePaletteFilter("transparent")).toBe("transparent");
+    expect(applyAccessiblePaletteFilter(COLOR_PALETTE.red[1])).toBe(
+      COLOR_PALETTE.red[1],
+    );
+  });
+
+  it("does nothing when disabled", () => {
+    expect(applyAccessiblePaletteFilter(COLOR_PALETTE.red[4], false)).toBe(
+      COLOR_PALETTE.red[4],
+    );
+  });
+
+  it("every mapped color meets 3:1 on the default white canvas", () => {
+    for (const color of Object.values(ACCESSIBLE_COLOR_MAP)) {
+      expect(meetsContrast(color, COLOR_PALETTE.white)).toBe(true);
+    }
+  });
+});
+
+describe("applyColorFilters", () => {
+  it("is the identity with both filters off", () => {
+    expect(
+      applyColorFilters("#e03131", {
+        isDarkMode: false,
+        accessiblePalette: false,
+      }),
+    ).toBe("#e03131");
+  });
+
+  it("applies the accessible palette before the dark mode filter", () => {
+    expect(
+      applyColorFilters("#e03131", {
+        isDarkMode: true,
+        accessiblePalette: true,
+      }),
+    ).toBe(applyDarkModeFilter("#d55e00"));
   });
 });

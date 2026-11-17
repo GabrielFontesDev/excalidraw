@@ -1,5 +1,4 @@
 import {
-  ACCESSIBLE_ELEMENT_STROKE_PICKS,
   COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_PICKS,
@@ -45,11 +44,7 @@ export type ColorDefaultKey =
 
 export type ColorTargetAppState = Pick<
   AppState,
-  | "selectedElementIds"
-  | "editingTextElement"
-  | "activeTool"
-  | "accessiblePaletteEnabled"
-  | ColorDefaultKey
+  "selectedElementIds" | "editingTextElement" | "activeTool" | ColorDefaultKey
 >;
 
 export type ColorTarget = {
@@ -165,9 +160,7 @@ export const resolveColorTarget = (
           ? STICKY_NOTE_STROKE_PICKS
           : STICKY_NOTE_BACKGROUND_PICKS
         : isStroke
-        ? appState.accessiblePaletteEnabled
-          ? ACCESSIBLE_ELEMENT_STROKE_PICKS
-          : DEFAULT_ELEMENT_STROKE_PICKS
+        ? DEFAULT_ELEMENT_STROKE_PICKS
         : DEFAULT_ELEMENT_BACKGROUND_PICKS,
     customizableTopPicks:
       kind === "sticky"
