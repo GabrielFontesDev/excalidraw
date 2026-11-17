@@ -2670,6 +2670,8 @@ class App extends React.Component<AppProps, AppState> {
                               pendingFlowchartNodes:
                                 this.flowchart.pendingNodes,
                               theme: this.state.theme,
+                              accessiblePalette:
+                                this.state.accessiblePaletteEnabled,
                               ...this.getRenderOverrideConfig(),
                             }}
                           />
@@ -2695,6 +2697,8 @@ class App extends React.Component<AppProps, AppState> {
                                   this.elementsPendingErasure,
                                 pendingFlowchartNodes: null,
                                 theme: this.state.theme,
+                                accessiblePalette:
+                                  this.state.accessiblePaletteEnabled,
                                 ...this.getRenderOverrideConfig(),
                               }}
                               // a tool dragged out of the toolbar previews

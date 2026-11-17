@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useEffect, useRef } from "react";
 
 import {
-  applyDarkModeFilter,
+  applyColorFilters,
   isColorDark,
   THEME,
   type ColorPaletteCustom,
@@ -25,6 +25,7 @@ import type { TranslationKeys } from "../../i18n";
 
 interface PickerColorListProps {
   theme: Theme;
+  accessiblePalette?: boolean;
   palette: ColorPaletteCustom;
   color: string | null;
   onChange: (color: string) => void;
@@ -39,6 +40,7 @@ interface PickerColorListProps {
 
 const PickerColorList = ({
   theme,
+  accessiblePalette,
   palette,
   color,
   onChange,
@@ -83,7 +85,10 @@ const PickerColorList = ({
         }
 
         const keybinding = colorPickerHotkeyBindings[index];
-        const displayColor = applyDarkModeFilter(color, theme === THEME.DARK);
+        const displayColor = applyColorFilters(color, {
+          isDarkMode: theme === THEME.DARK,
+          accessiblePalette,
+        });
         const label = t(
           `colors.${key.replace(/\d+/, "")}` as unknown as TranslationKeys,
           null,

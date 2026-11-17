@@ -9,7 +9,7 @@ import {
   getFontFamilyString,
   isTestEnv,
   MIME_TYPES,
-  applyDarkModeFilter,
+  applyColorFilters,
   isRTL,
   hasRTLChars,
   viewportCoordsToSceneCoords,
@@ -567,10 +567,10 @@ export const textWysiwyg = ({
         transform,
         textAlign,
         verticalAlign,
-        color: applyDarkModeFilter(
-          updatedTextElement.strokeColor,
-          appState.theme === THEME.DARK,
-        ),
+        color: applyColorFilters(updatedTextElement.strokeColor, {
+          isDarkMode: appState.theme === THEME.DARK,
+          accessiblePalette: appState.accessiblePaletteEnabled,
+        }),
         opacity: updatedTextElement.opacity / 100,
       });
       currentTextLayout = {

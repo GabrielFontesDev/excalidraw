@@ -26,6 +26,7 @@ import {
   COLOR_PALETTE,
   LINE_POLYGON_POINT_MERGE_DISTANCE,
   applyDarkModeFilter,
+  applyAccessiblePaletteFilter,
   DEFAULT_STROKE_STREAMLINE,
 } from "@excalidraw/common";
 
@@ -88,7 +89,11 @@ export class ShapeCache {
   private static rg = new RoughGenerator();
   private static cache = new WeakMap<
     ExcalidrawElement,
-    { shape: ElementShape; theme: AppState["theme"] }
+    {
+      shape: ElementShape;
+      theme: AppState["theme"];
+      accessiblePalette: boolean;
+    }
   >();
 
   /**
@@ -98,9 +103,15 @@ export class ShapeCache {
   public static get = <T extends ExcalidrawElement>(
     element: T,
     theme: AppState["theme"] | null,
+    accessiblePalette = false,
   ) => {
     const cached = ShapeCache.cache.get(element);
-    if (cached && (theme === null || cached.theme === theme)) {
+    if (
+      cached &&
+      (theme === null ||
+        (cached.theme === theme &&
+          cached.accessiblePalette === accessiblePalette))
+    ) {
       return cached.shape as T["type"] extends keyof ElementShapes
         ? ElementShapes[T["type"]] | undefined
         : ElementShape | undefined;
@@ -130,12 +141,17 @@ export class ShapeCache {
       canvasBackgroundColor: AppState["viewBackgroundColor"];
       embedsValidationStatus: EmbedsValidationStatus;
       theme: AppState["theme"];
+      accessiblePalette?: boolean;
     } | null,
   ) => {
     // when exporting, always regenerated to guarantee the latest shape
     const cachedShape = renderConfig?.isExporting
       ? undefined
-      : ShapeCache.get(element, renderConfig ? renderConfig.theme : null);
+      : ShapeCache.get(
+          element,
+          renderConfig ? renderConfig.theme : null,
+          !!renderConfig?.accessiblePalette,
+        );
 
     // `null` indicates no rc shape applicable for this element type,
     // but it's considered a valid cache value (= do not regenerate)
@@ -162,6 +178,7 @@ export class ShapeCache {
       ShapeCache.cache.set(element, {
         shape,
         theme: renderConfig?.theme || THEME.LIGHT,
+        accessiblePalette: !!renderConfig?.accessiblePalette,
       });
     }
 
@@ -834,14 +851,30 @@ const _generateElementShape = (
     canvasBackgroundColor,
     embedsValidationStatus,
     theme,
+    accessiblePalette,
   }: {
     isExporting: boolean;
     canvasBackgroundColor: string;
     embedsValidationStatus: EmbedsValidationStatus | null;
     theme?: AppState["theme"];
+    accessiblePalette?: boolean;
   },
 ): ElementShape => {
   const isDarkMode = theme === THEME.DARK;
+  if (accessiblePalette && !isExporting) {
+    // display-only: the shape is drawn from a copy with filtered colors, the
+    // stored element (and the cache key) stay untouched
+    const strokeColor = applyAccessiblePaletteFilter(element.strokeColor);
+    const backgroundColor = applyAccessiblePaletteFilter(
+      element.backgroundColor,
+    );
+    if (
+      strokeColor !== element.strokeColor ||
+      backgroundColor !== element.backgroundColor
+    ) {
+      element = { ...element, strokeColor, backgroundColor };
+    }
+  }
   switch (element.type) {
     case "rectangle":
     case "iframe":

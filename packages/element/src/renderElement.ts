@@ -24,6 +24,7 @@ import {
   getVerticalOffset,
   invariant,
   applyDarkModeFilter,
+  applyColorFilters,
   isSafari,
   STICKY_NOTE_EDGE_SHADOW_OPACITY,
   STICKY_NOTE_EDGE_SHADOW_WIDTH,
@@ -209,6 +210,7 @@ export interface ExcalidrawElementWithCanvas {
   element: ExcalidrawElement | ExcalidrawTextElement;
   canvas: HTMLCanvasElement;
   theme: AppState["theme"];
+  accessiblePalette: boolean;
   scale: number;
   /** backing-store scale the bitmap was rasterized at, see StaticCanvasRenderConfig["scale"] */
   deviceScale: number;
@@ -332,6 +334,7 @@ const generateElementCanvas = (
     element,
     canvas,
     theme: appState.theme,
+    accessiblePalette: !!renderConfig.accessiblePalette,
     scale,
     deviceScale: renderConfig.scale,
     environment,
@@ -529,10 +532,10 @@ const drawElementOnCanvas = (
 
         for (const shape of shapes) {
           if (typeof shape === "string") {
-            context.fillStyle = applyDarkModeFilter(
-              element.strokeColor,
-              renderConfig.theme === THEME.DARK,
-            );
+            context.fillStyle = applyColorFilters(element.strokeColor, {
+              isDarkMode: renderConfig.theme === THEME.DARK,
+              accessiblePalette: renderConfig.accessiblePalette,
+            });
             context.fill(createPath(shape));
           } else {
             rc.draw(shape);
@@ -676,10 +679,10 @@ const drawElementOnCanvas = (
         }
         withSavedContext(context, () => {
           context.font = getFontString(element);
-          context.fillStyle = applyDarkModeFilter(
-            element.strokeColor,
-            renderConfig.theme === THEME.DARK,
-          );
+          context.fillStyle = applyColorFilters(element.strokeColor, {
+            isDarkMode: renderConfig.theme === THEME.DARK,
+            accessiblePalette: renderConfig.accessiblePalette,
+          });
           context.textAlign = element.textAlign as CanvasTextAlign;
 
           // Canvas does not support multiline text by default
@@ -750,6 +753,8 @@ const generateElementWithCanvas = (
     !prevElementWithCanvas ||
     shouldRegenerateBecauseZoom ||
     prevElementWithCanvas.theme !== appState.theme ||
+    prevElementWithCanvas.accessiblePalette !==
+      !!renderConfig.accessiblePalette ||
     prevElementWithCanvas.deviceScale !== renderConfig.scale ||
     prevElementWithCanvas.environment !== renderEnvironment ||
     prevElementWithCanvas.imageCrop !== imageCrop ||

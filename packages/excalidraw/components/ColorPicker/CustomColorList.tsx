@@ -1,7 +1,7 @@
 import clsx from "clsx";
 import { useEffect, useRef } from "react";
 
-import { applyDarkModeFilter, THEME } from "@excalidraw/common";
+import { applyColorFilters, THEME } from "@excalidraw/common";
 
 import type { Theme } from "@excalidraw/element/types";
 
@@ -13,6 +13,7 @@ import { useColorPickerDnD } from "./colorTopPicksDnD";
 
 interface CustomColorListProps {
   theme: Theme;
+  accessiblePalette?: boolean;
   colors: string[];
   color: string | null;
   onChange: (color: string) => void;
@@ -21,6 +22,7 @@ interface CustomColorListProps {
 
 export const CustomColorList = ({
   theme,
+  accessiblePalette,
   colors,
   color,
   onChange,
@@ -42,7 +44,10 @@ export const CustomColorList = ({
   return (
     <div className="color-picker-content--default">
       {colors.map((c, i) => {
-        const displayColor = applyDarkModeFilter(c, theme === THEME.DARK);
+        const displayColor = applyColorFilters(c, {
+          isDarkMode: theme === THEME.DARK,
+          accessiblePalette,
+        });
         return (
           <button
             ref={color === c ? btnRef : undefined}

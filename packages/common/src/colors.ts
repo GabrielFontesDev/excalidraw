@@ -328,6 +328,52 @@ export const ACCESSIBLE_ELEMENT_STROKE_PICKS = [
   ACCESSIBLE_COLOR_PALETTE.orange,
 ] as ColorTuple;
 
+/**
+ * default stroke pick -> accessible pick in the same slot (black -> black,
+ * red -> vermillion, green -> bluish green, blue -> blue, yellow -> orange).
+ * Keys and values are lowercase #rrggbb.
+ */
+export const ACCESSIBLE_COLOR_MAP: Readonly<Record<string, string>> =
+  Object.fromEntries(
+    DEFAULT_ELEMENT_STROKE_PICKS.map((color, index) => [
+      color.toLowerCase(),
+      ACCESSIBLE_ELEMENT_STROKE_PICKS[index],
+    ]),
+  );
+
+/**
+ * Display-only filter, like `applyDarkModeFilter`: elements keep their stored
+ * color and only the rendered color changes, so turning it off restores the
+ * original colors and other collaborators are not affected.
+ *
+ * Only exact #rrggbb / #rrggbbaa matches of `ACCESSIBLE_COLOR_MAP` are
+ * replaced (alpha is kept); any other color is returned unchanged.
+ */
+export const applyAccessiblePaletteFilter = (
+  color: string,
+  enable = true,
+): string => {
+  if (!enable) {
+    return color;
+  }
+  const lower = color.toLowerCase();
+  if (lower.length !== 7 && lower.length !== 9) {
+    return color;
+  }
+  const mapped = ACCESSIBLE_COLOR_MAP[lower.slice(0, 7)];
+  return mapped ? `${mapped}${lower.slice(7)}` : color;
+};
+
+/** the accessible palette (if enabled) followed by the dark mode filter */
+export const applyColorFilters = (
+  color: string,
+  opts: { isDarkMode: boolean; accessiblePalette?: boolean },
+): string =>
+  applyDarkModeFilter(
+    applyAccessiblePaletteFilter(color, !!opts.accessiblePalette),
+    opts.isDarkMode,
+  );
+
 // palette defaults
 // -----------------------------------------------------------------------------
 

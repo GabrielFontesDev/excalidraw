@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { memo, useRef, useEffect } from "react";
 
 import {
-  applyDarkModeFilter,
+  applyColorFilters,
   COLOR_OUTLINE_CONTRAST_THRESHOLD,
   COLOR_PALETTE,
   DEFAULT_ELEMENT_BACKGROUND_PICKS,
@@ -200,6 +200,7 @@ const ColorPickerPopupContent = ({
           onResetTopPicks={onResetTopPicks}
           color={color}
           theme={appState.theme}
+          accessiblePalette={appState.accessiblePaletteEnabled}
           onChange={(changedColor) => {
             // Save caret position before color change if editing text
             const savedSelection = appState.editingTextElement
@@ -269,6 +270,7 @@ const ColorPickerTrigger = ({
   color,
   type,
   theme,
+  accessiblePalette,
   mode = "background",
   onToggle,
   editingTextElement,
@@ -277,6 +279,7 @@ const ColorPickerTrigger = ({
   label: string;
   type: ColorPickerType;
   theme: Theme;
+  accessiblePalette?: boolean;
   mode?: "background" | "stroke";
   onToggle: () => void;
   editingTextElement?: boolean;
@@ -287,7 +290,10 @@ const ColorPickerTrigger = ({
   const isMobileMode = stylesPanelMode === "mobile";
   const dnd = useColorPickerDnD();
   const displayColor = color
-    ? applyDarkModeFilter(color, theme === THEME.DARK)
+    ? applyColorFilters(color, {
+        isDarkMode: theme === THEME.DARK,
+        accessiblePalette,
+      })
     : null;
   const handleClick = (e: React.MouseEvent) => {
     // use pointerdown so we run before outside-close logic
@@ -426,6 +432,7 @@ const ColorPickerComponent = ({
         {!isCompactMode && (
           <TopPicks
             theme={appState.theme}
+            accessiblePalette={appState.accessiblePaletteEnabled}
             activeColor={color}
             onChange={(pickedColor) => {
               onChange(pickedColor);
@@ -462,6 +469,7 @@ const ColorPickerComponent = ({
             label={label}
             type={type}
             theme={appState.theme}
+            accessiblePalette={appState.accessiblePaletteEnabled}
             mode={type === "elementStroke" ? "stroke" : "background"}
             editingTextElement={!!appState.editingTextElement}
             onToggle={() => {
@@ -538,6 +546,8 @@ const areColorPickerPropsEqual = (
     prev.excludedColors === next.excludedColors &&
     prev.customizableTopPicks === next.customizableTopPicks &&
     prev.appState.theme === next.appState.theme &&
+    prev.appState.accessiblePaletteEnabled ===
+      next.appState.accessiblePaletteEnabled &&
     prev.appState.colorTopPicks === next.appState.colorTopPicks &&
     // the trigger tweaks its click behavior while a text element is edited
     !!prev.appState.editingTextElement === !!next.appState.editingTextElement

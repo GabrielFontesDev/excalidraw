@@ -33,6 +33,7 @@ import type { ColorPickerType } from "./colorPickerUtils";
 
 interface PickerProps {
   theme: Theme;
+  accessiblePalette?: boolean;
   color: string | null;
   onChange: (color: string) => void;
   type: ColorPickerType;
@@ -53,6 +54,7 @@ export const Picker = React.forwardRef(
   (
     {
       theme,
+      accessiblePalette,
       color,
       onChange,
       type,
@@ -186,6 +188,7 @@ export const Picker = React.forwardRef(
               </PickerHeading>
               <CustomColorList
                 theme={theme}
+                accessiblePalette={accessiblePalette}
                 colors={customColors}
                 color={color}
                 label={t("colorPicker.mostUsedCustomColors")}
@@ -198,6 +201,7 @@ export const Picker = React.forwardRef(
             <PickerHeading>{t("colorPicker.colors")}</PickerHeading>
             <PickerColorList
               theme={theme}
+              accessiblePalette={accessiblePalette}
               color={color}
               palette={palette}
               onChange={onChange}
@@ -211,6 +215,7 @@ export const Picker = React.forwardRef(
             <PickerHeading>{t("colorPicker.shades")}</PickerHeading>
             <ShadeList
               theme={theme}
+              accessiblePalette={accessiblePalette}
               color={color}
               onChange={onChange}
               palette={palette}

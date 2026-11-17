@@ -58,6 +58,9 @@ export type StaticCanvasRenderConfig = {
   elementsPendingErasure: ElementsPendingErasure;
   pendingFlowchartNodes: PendingExcalidrawElements | null;
   theme: AppState["theme"];
+  /** display element colors through `applyAccessiblePaletteFilter`
+   (never when exporting). @default false */
+  accessiblePalette?: boolean;
   elementRenderOverrides?: ElementRenderOverrides;
 };
 

@@ -2,7 +2,7 @@ import clsx from "clsx";
 import { useEffect, useRef } from "react";
 
 import {
-  applyDarkModeFilter,
+  applyColorFilters,
   THEME,
   type ColorPaletteCustom,
 } from "@excalidraw/common";
@@ -21,6 +21,7 @@ import { useColorPickerDnD } from "./colorTopPicksDnD";
 
 interface ShadeListProps {
   theme: Theme;
+  accessiblePalette?: boolean;
   color: string | null;
   onChange: (color: string) => void;
   palette: ColorPaletteCustom;
@@ -29,6 +30,7 @@ interface ShadeListProps {
 
 export const ShadeList = ({
   theme,
+  accessiblePalette,
   color,
   onChange,
   palette,
@@ -61,10 +63,10 @@ export const ShadeList = ({
       return (
         <div className="color-picker-content--default shades">
           {shades.map((color, i) => {
-            const displayColor = applyDarkModeFilter(
-              color,
-              theme === THEME.DARK,
-            );
+            const displayColor = applyColorFilters(color, {
+              isDarkMode: theme === THEME.DARK,
+              accessiblePalette,
+            });
             return (
               <button
                 ref={
