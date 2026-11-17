@@ -293,6 +293,41 @@ export const DEFAULT_CANVAS_BACKGROUND_PICKS = [
   "#fdf8f6",
 ] as ColorTuple;
 
+// accessible palette (opt-in, does not change COLOR_PALETTE)
+// -----------------------------------------------------------------------------
+
+/**
+ * Colorblind-safe palette based on Okabe & Ito, "Color Universal Design"
+ * (2008), https://jfly.uni-koeln.de/color/
+ *
+ * Its hues stay distinguishable under protanopia, deuteranopia and tritanopia.
+ * Colors that fell below 3:1 on the default white canvas (WCAG 2.x SC 1.4.11)
+ * were darkened, keeping their hue:
+ * - orange   #e69f00 -> #bd8300
+ * - skyBlue  #56b4e9 -> #1d96db
+ * - yellow   #f0e442 -> #9c920c
+ */
+export const ACCESSIBLE_COLOR_PALETTE = {
+  black: "#000000",
+  orange: "#bd8300",
+  skyBlue: "#1d96db",
+  bluishGreen: "#009e73",
+  yellow: "#9c920c",
+  blue: "#0072b2",
+  vermillion: "#d55e00",
+  reddishPurple: "#cc79a7",
+} as const;
+
+// ORDER matters for positioning in quick picker. Mirrors
+// DEFAULT_ELEMENT_STROKE_PICKS (black, red, green, blue, yellow).
+export const ACCESSIBLE_ELEMENT_STROKE_PICKS = [
+  ACCESSIBLE_COLOR_PALETTE.black,
+  ACCESSIBLE_COLOR_PALETTE.vermillion,
+  ACCESSIBLE_COLOR_PALETTE.bluishGreen,
+  ACCESSIBLE_COLOR_PALETTE.blue,
+  ACCESSIBLE_COLOR_PALETTE.orange,
+] as ColorTuple;
+
 // palette defaults
 // -----------------------------------------------------------------------------
 
@@ -431,6 +466,54 @@ export const isColorDark = (color: string, threshold = 160): boolean => {
 
   const { r, g, b } = tc.toRgb();
   return calculateContrast(r, g, b) < threshold;
+};
+
+/** WCAG 2.x SC 1.4.11 (non-text contrast): strokes, shapes, icons */
+export const WCAG_MIN_CONTRAST_GRAPHICS = 3;
+/** WCAG 2.x SC 1.4.3 (contrast minimum, level AA): normal-size text */
+export const WCAG_MIN_CONTRAST_TEXT = 4.5;
+
+const assertOpaqueColor = (color: string) => {
+  const tc = tinycolor(color);
+  if (!tc.isValid()) {
+    throw new Error(`Invalid color: "${color}"`);
+  }
+  if (tc.getAlpha() !== 1) {
+    throw new Error(
+      `Contrast is only defined for opaque colors, got "${color}"`,
+    );
+  }
+  return tc;
+};
+
+/**
+ * WCAG 2.x contrast ratio between two opaque colors, from 1 (same luminance)
+ * to 21 (black on white). Unrounded: WCAG says not to round up when comparing
+ * against a threshold.
+ *
+ * Unlike `isColorDark` (YIQ), this uses WCAG relative luminance.
+ *
+ * @throws if either color is invalid or not fully opaque
+ */
+export const getContrastRatio = (color1: string, color2: string): number => {
+  return tinycolor.readability(
+    assertOpaqueColor(color1),
+    assertOpaqueColor(color2),
+  );
+};
+
+/**
+ * Whether two opaque colors reach `minRatio`. Defaults to the 3:1 WCAG
+ * threshold for graphics, which is what canvas strokes are.
+ *
+ * @throws if either color is invalid or not fully opaque
+ */
+export const meetsContrast = (
+  color1: string,
+  color2: string,
+  minRatio: number = WCAG_MIN_CONTRAST_GRAPHICS,
+): boolean => {
+  return getContrastRatio(color1, color2) >= minRatio;
 };
 
 // -----------------------------------------------------------------------------

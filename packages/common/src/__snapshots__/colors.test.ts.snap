@@ -1,5 +1,18 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`ACCESSIBLE_COLOR_PALETTE > doesn't regress 1`] = `
+{
+  "black": "#000000",
+  "blue": "#0072b2",
+  "bluishGreen": "#009e73",
+  "orange": "#bd8300",
+  "reddishPurple": "#cc79a7",
+  "skyBlue": "#1d96db",
+  "vermillion": "#d55e00",
+  "yellow": "#9c920c",
+}
+`;
+
 exports[`COLOR_PALETTE > color palette doesn't regress 1`] = `
 {
   "black": "#1e1e1e",
